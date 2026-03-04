@@ -1,0 +1,41 @@
+.day-header {
+    text-align: center;
+    margin: -1rem -1rem 1rem -1rem;
+    padding: 1rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 6px 6px 0 0;
+}
+
+.event-card {
+    margin: 0.5rem 0;
+    padding: 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border-left: 4px solid;
+}
+
+.event-card:hover {
+    transform: translateX(4px);
+}
+
+.event-card.class {
+    background: #e8f6f3;
+    border-color: var(--color-class);
+}
+
+.event-card.activity {
+    background: #fdedec;
+    border-color: var(--color-activity);
+}
+
+.event-title {
+    font-weight: bold;
+    margin-bottom: 0.2rem;
+}
+
+.event-time-location {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}

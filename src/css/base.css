@@ -1,0 +1,19 @@
+:root {
+    --color-bg: #fff7e6;
+    --color-primary: #c0392b;
+    --color-class: #1abc9c;
+    --color-activity: #e74c3c;
+    --color-text: #2c3e50;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.5;
+}
