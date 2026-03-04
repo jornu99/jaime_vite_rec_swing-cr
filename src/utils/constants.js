@@ -9,7 +9,7 @@ export const FESTIVAL_DAYS = {
     SUNDAY: 'Domingo'
 };
 
-export const CLASS_ROOMS = [
+export const CLASSROOMS = [
     'Be Hopper',
     'New Orleans',
     'Savoy'
@@ -19,7 +19,7 @@ export const ACTIVITY_LOCATIONS = [
     'Antiguo Casino de Ciudad Real',
     'Parque de Gasset',
     'Prado',
-    ...CLASS_ROOMS
+    ...CLASSROOMS
 ];
 
 export const STYLES = {
