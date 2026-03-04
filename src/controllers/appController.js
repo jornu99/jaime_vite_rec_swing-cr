@@ -93,6 +93,30 @@ export class AppController {
             </form>
 
             <div id="calendar"></div>
+
+            <div id="event-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <div id="modal-body"></div>
+                    <div class="modal-footer">
+                        <button id="delete-event-btn" class="btn-delete">Eliminar Evento</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="confirm-modal" class="modal" style="display: none;">
+                <div class="modal-content confirmation-size">
+                    <span class="close-confirm close-modal">&times;</span>
+                    <div id="confirm-body">
+                        <h3>¿Estás seguro?</h3>
+                        <p>Esta acción no se puede deshacer.</p>
+                    </div>
+                    <div class="confirm-footer">
+                        <button id="btn-confirm-delete" class="btn-delete">Eliminar</button>
+                        <button id="btn-confirm-cancel" class="btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            </div>
         `;
 
         document.getElementById('event-type').onchange = (e) => {

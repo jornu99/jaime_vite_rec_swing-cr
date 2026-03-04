@@ -65,3 +65,111 @@
         grid-template-columns: 1fr !important;
     }
 }
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    position: relative;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #95a5a6;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: #2c3e50;
+}
+
+.modal-content {
+    padding-top: 40px !important;
+}
+
+.delete-quick-btn {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    color: #ff0000;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+    padding: 5px;
+    line-height: 1;
+    border: none;
+    background: none;
+}
+
+.event-card {
+    position: relative;
+    padding-right: 35px !important;
+}
+
+.event-card:hover .delete-quick-btn {
+    display: block;
+}
+
+.confirmation-size {
+    max-width: 350px !important;
+    text-align: center;
+    padding: 25px !important;
+}
+
+.confirm-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.btn-secondary {
+    background-color: #ecf0f1;
+    color: #7f8c8d;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    flex: 1;
+    font-weight: bold;
+}
+
+.btn-secondary:hover {
+    background-color: #bdc3c7;
+}
+
+#btn-confirm-delete {
+    flex: 1;
+    margin-top: 0;
+}
