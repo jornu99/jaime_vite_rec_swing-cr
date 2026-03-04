@@ -46,6 +46,14 @@ export class EventFormController {
             this.updateAvailableLocations();
             this.showSuccess(`Evento "${name}" creado correctamente`);
         }
+
+        const validHours = { FRIDAY: [20, 21, 22, 23], SATURDAY: [...Array(24).keys()], SUNDAY: [...Array(20).keys()] };
+        const hour = parseInt(startTime.split(':')[0]);
+
+        if (!validHours[day].includes(hour)) {
+            this.showError(`Hora no permitida para el ${day}`);
+            return;
+        }
     }
 
     updateAvailableLocations() {

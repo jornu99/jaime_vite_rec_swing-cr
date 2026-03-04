@@ -27,4 +27,9 @@ export class EventRepository {
     getAll() {
         return [...this.events];
     }
+
+    delete(id) {
+        this.events = this.events.filter(ev => ev.id !== id);
+        this.save();
+    }
 }
