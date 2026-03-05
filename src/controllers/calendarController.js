@@ -179,8 +179,28 @@ export class CalendarController {
       return;
     }
 
+    const isOccupied = this.repo.getAll().some(otherEvent =>
+      otherEvent.id !== eventId &&
+      otherEvent.day === dayKey &&
+      otherEvent.location === event.location &&
+      this.checkOverlap(otherEvent.startTime, otherEvent.endTime, event.startTime, event.endTime)
+    );
+
+    if (isOccupied) {
+      alert(`Error: No puedes moverlo aquí. La ubicación "${event.location}" ya está ocupada el ${newDay} a las ${event.startTime}.`);
+      return;
+    }
+
     event.day = dayKey;
     this.repo.save();
     this.render();
+  }
+
+  checkOverlap(start1, end1, start2, end2) {
+    const toMin = (t) => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    };
+    return toMin(start1) < toMin(end2) && toMin(start2) < toMin(end1);
   }
 }
