@@ -67,7 +67,15 @@ export class EventFormController {
         if (event) {
             this.repo.add(event);
             this.calendar.render();
+
             e.target.reset();
+
+            const daySelect = document.getElementById('event-day');
+            daySelect.dispatchEvent(new Event('change'));
+
+            document.getElementById('class-fields').style.display = 'block';
+            document.getElementById('activity-fields').style.display = 'none';
+
             this.updateAvailableLocations();
             this.showSuccess(`Evento "${name}" creado correctamente`);
         }
