@@ -149,7 +149,7 @@ export class AppController {
         const hours = {
             FRIDAY: Array.from({ length: 4 }, (_, i) => 20 + i),
             SATURDAY: Array.from({ length: 24 }, (_, i) => i),
-            SUNDAY: Array.from({ length: 20 }, (_, i) => i)
+            SUNDAY: Array.from({ length: 21 }, (_, i) => i)
         };
         timeSelect.innerHTML = hours[day].map(h =>
             `<option value="${h.toString().padStart(2, '0')}:00">${h.toString().padStart(2, '0')}:00</option>`

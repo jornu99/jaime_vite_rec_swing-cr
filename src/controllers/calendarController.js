@@ -46,6 +46,34 @@ export class CalendarController {
         this.showConfirmDelete(btn.dataset.id);
       };
     });
+
+    this.container.querySelectorAll('.event-card').forEach(card => {
+      card.ondragstart = (e) => {
+        e.dataTransfer.setData('text/plain', card.dataset.id);
+        card.style.opacity = '0.5';
+      };
+      card.ondragend = () => card.style.opacity = '1';
+    });
+
+    this.container.querySelectorAll('.day-column').forEach(column => {
+      column.ondragover = (e) => {
+        e.preventDefault();
+        column.style.background = '#f0f0f0';
+      };
+
+      column.ondragleave = () => {
+        column.style.background = '#ffffff';
+      };
+
+      column.ondrop = (e) => {
+        e.preventDefault();
+        column.style.background = '#ffffff';
+        const eventId = e.dataTransfer.getData('text/plain');
+        const newDay = column.querySelector('.day-header').innerText.toUpperCase();
+
+        this.handleDrop(eventId, newDay);
+      };
+    });
   }
 
   groupEventsByDay(events) {
@@ -64,9 +92,13 @@ export class CalendarController {
     if (!events || events.length === 0) {
       return `<div class="no-events">Sin eventos</div>`;
     }
+
     return events.map(ev => `
-      <div class="event-card ${ev.type}" data-id="${ev.id}">
-          <button class="delete-quick-btn" data-id="${ev.id}">&times;</button>
+      <div class="event-card ${ev.type}"
+          data-id="${ev.id}"
+          draggable="true"
+          style="position: relative;">
+          <span class="delete-quick-btn" data-id="${ev.id}">&times;</span>
           <div class="event-title">${ev.name}</div>
           <div class="event-time-location">${ev.startTime} → ${ev.location}</div>
       </div>
@@ -126,5 +158,29 @@ export class CalendarController {
     btnClose.onclick = close;
 
     modal.onclick = (e) => { if (e.target === modal) close(); };
+  }
+
+  handleDrop(eventId, newDay) {
+    const event = this.repo.getAll().find(e => e.id === eventId);
+    if (!event) return;
+
+    const dayMap = { 'VIERNES': 'FRIDAY', 'SÁBADO': 'SATURDAY', 'SABADO': 'SATURDAY', 'DOMINGO': 'SUNDAY' };
+    const dayKey = dayMap[newDay] || newDay;
+
+    const hour = parseInt(event.startTime.split(':')[0]);
+    const validHours = {
+      FRIDAY: [20, 21, 22, 23],
+      SATURDAY: Array.from({ length: 24 }, (_, i) => i),
+      SUNDAY: Array.from({ length: 21 }, (_, i) => i)
+    };
+
+    if (!validHours[dayKey].includes(hour)) {
+      alert(`No puedes mover este evento al ${newDay}. El horario (${event.startTime}) no está permitido.`);
+      return;
+    }
+
+    event.day = dayKey;
+    this.repo.save();
+    this.render();
   }
 }

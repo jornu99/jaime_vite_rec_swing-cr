@@ -173,3 +173,15 @@
     flex: 1;
     margin-top: 0;
 }
+
+.event-card {
+    cursor: grab !important;
+}
+
+.event-card:active {
+    cursor: grabbing !important;
+}
+
+.day-column {
+    transition: background-color 0.2s ease;
+}

@@ -32,12 +32,37 @@ export class EventFormController {
         const name = formData.get('name');
         const location = formData.get('location');
 
-        if (!location) {
-            this.showError('No hay ubicaciones disponibles en este horario');
+        if (!name || !location || !startTime) {
+            this.showError('Por favor, rellena todos los campos obligatorios');
             return;
         }
 
-        const event = this.createEvent(type, day, startTime, name, location, formData);
+        const endTime = this.calculateEndTime(startTime, 60);
+
+        const validHours = {
+            FRIDAY: [20, 21, 22, 23],
+            SATURDAY: [...Array(24).keys()],
+            SUNDAY: [...Array(21).keys()]
+        };
+        const hour = parseInt(startTime.split(':')[0]);
+
+        if (!validHours[day] || !validHours[day].includes(hour)) {
+            this.showError(`Error: Hora ${startTime} no permitida para el ${day}`);
+            return;
+        }
+
+        const isOccupied = this.repo.getAll().some(event =>
+            event.day === day &&
+            event.location === location &&
+            this.timesOverlap(event.startTime, event.endTime, startTime, endTime)
+        );
+
+        if (isOccupied) {
+            this.showError(`La ubicación "${location}" ya está ocupada en este horario.`);
+            return;
+        }
+
+        const event = this.createEvent(type, day, startTime, endTime, name, location, formData);
 
         if (event) {
             this.repo.add(event);
@@ -46,14 +71,14 @@ export class EventFormController {
             this.updateAvailableLocations();
             this.showSuccess(`Evento "${name}" creado correctamente`);
         }
+    }
 
-        const validHours = { FRIDAY: [20, 21, 22, 23], SATURDAY: [...Array(24).keys()], SUNDAY: [...Array(20).keys()] };
-        const hour = parseInt(startTime.split(':')[0]);
-
-        if (!validHours[day].includes(hour)) {
-            this.showError(`Hora no permitida para el ${day}`);
-            return;
-        }
+    calculateEndTime(startTime, duration) {
+        const [h, m] = startTime.split(':').map(Number);
+        const total = h * 60 + m + duration;
+        const endH = Math.floor(total / 60);
+        const endM = total % 60;
+        return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
     }
 
     updateAvailableLocations() {
@@ -74,12 +99,12 @@ export class EventFormController {
 
     getAvailableLocations(type, day, startTime) {
         const allEvents = this.repo.getAll();
-        const proposedEndTime = type === 'class' ? '21:00' : '22:00';
+        const proposedEndTime = this.calculateEndTime(startTime, 60);
         const allLocations = type === 'class' ? CLASSROOMS : ACTIVITY_LOCATIONS;
 
         const conflictingEvents = allEvents.filter(event =>
-            this.timesOverlap(event.startTime, event.endTime, startTime, proposedEndTime) &&
-            event.day === day
+            event.day === day &&
+            this.timesOverlap(event.startTime, event.endTime, startTime, proposedEndTime)
         );
 
         const usedLocations = new Set(conflictingEvents.map(e => e.location));
@@ -93,43 +118,31 @@ export class EventFormController {
     }
 
     timesOverlap(start1, end1, start2, end2) {
-        const [h1, m1] = start1.split(':').map(Number);
-        const [h2, m2] = end1.split(':').map(Number);
-        const [h3, m3] = start2.split(':').map(Number);
-        const [h4, m4] = end2.split(':').map(Number);
-
-        const start1Minutes = h1 * 60 + m1;
-        const end1Minutes = h2 * 60 + m2;
-        const start2Minutes = h3 * 60 + m3;
-        const end2Minutes = h4 * 60 + m4;
-
-        return start1Minutes < end2Minutes && start2Minutes < end1Minutes;
+        const toMinutes = (time) => {
+            const [h, m] = time.split(':').map(Number);
+            return h * 60 + m;
+        };
+        const s1 = toMinutes(start1);
+        const e1 = toMinutes(end1);
+        const s2 = toMinutes(start2);
+        const e2 = toMinutes(end2);
+        return s1 < e2 && s2 < e1;
     }
 
-    createEvent(type, day, startTime, name, location, formData) {
+    createEvent(type, day, startTime, endTime, name, location, formData) {
         const id = crypto.randomUUID();
-        const endTime = type === 'class' ? '21:00' : '22:00';
+        const commonData = { id, name, day, startTime, endTime, location };
 
         if (type === 'class') {
             return new ClassEvent({
-                id,
-                name,
-                day,
-                startTime,
-                endTime,
-                location,
+                ...commonData,
                 teachers: formData.get('teachers') || '',
                 style: formData.get('style') || STYLES[0],
                 level: formData.get('level') || LEVELS[0]
             });
         } else {
             return new ActivityEvent({
-                id,
-                name,
-                day,
-                startTime,
-                endTime,
-                location,
+                ...commonData,
                 activityType: formData.get('activityType') || ACTIVITY_TYPES.SOCIAL,
                 band: formData.get('band') || '',
                 description: formData.get('description') || ''
@@ -141,15 +154,17 @@ export class EventFormController {
         this.errorDiv.textContent = message;
         this.errorDiv.className = 'error-message';
         this.errorDiv.style.display = 'block';
+
+        setTimeout(() => {
+            this.clearError();
+        }, 4000);
     }
 
     showSuccess(message) {
         this.errorDiv.textContent = message;
         this.errorDiv.className = 'success-message';
         this.errorDiv.style.display = 'block';
-        setTimeout(() => {
-            this.clearError();
-        }, 3000);
+        setTimeout(() => this.clearError(), 3000);
     }
 
     clearError() {
