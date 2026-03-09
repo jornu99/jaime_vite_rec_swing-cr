@@ -22,98 +22,95 @@ export class AppController {
             
             <form id="event-form">
                 <label>Tipo:
-                <select name="type" id="event-type">
-                    <option value="class">Clase</option>
-                    <option value="activity">Actividad</option>
-                </select>
+                    <select name="type" id="event-type">
+                        <option value="class">Clase</option>
+                        <option value="activity">Actividad</option>
+                    </select>
                 </label>
 
                 <label>Día:
-                <select name="day" id="event-day">
-                    <option value="FRIDAY">Viernes</option>
-                    <option value="SATURDAY">Sábado</option>
-                    <option value="SUNDAY">Domingo</option>
-                </select>
+                    <select name="day" id="event-day">
+                        <option value="FRIDAY">Viernes</option>
+                        <option value="SATURDAY">Sábado</option>
+                        <option value="SUNDAY">Domingo</option>
+                    </select>
                 </label>
 
                 <label>Hora inicio:
-                <select name="startTime" id="event-time"></select>
+                    <select name="startTime" id="event-time">
+                    </select>
                 </label>
 
                 <label>Nombre:
-                <input type="text" name="name" required>
+                    <input type="text" name="name" required>
                 </label>
 
                 <label>Ubicación:
-                <select name="location" id="event-location"></select>
+                    <select name="location" id="event-location">
+                    </select>
                 </label>
 
                 <div id="class-fields">
-                <label>Profesores:
-                    <input type="text" name="teachers">
-                </label>
-                <label>Estilo:
-                    <select name="style">
-                    <option value="LINDY_HOP">Lindy Hop</option>
-                    <option value="SHAG">Shag</option>
-                    <option value="SOLO_JAZZ">Solo Jazz</option>
-                    <option value="BALBOA">Balboa</option>
-                    <option value="CHARLESTON">Charleston</option>
-                    </select>
-                </label>
-                <label>Nivel:
-                    <select name="level">
-                    <option value="BASIC">Básico</option>
-                    <option value="INTERMEDIATE">Intermedio</option>
-                    <option value="ADVANCED">Avanzado</option>
-                    </select>
-                </label>
+                    <label>Profesores:
+                        <input type="text" name="teachers">
+                    </label>
+                    <label>Estilo:
+                        <select name="style">
+                            <option value="LINDY_HOP">Lindy Hop</option>
+                            <option value="SHAG">Shag</option>
+                            <option value="SOLO_JAZZ">Solo Jazz</option>
+                            <option value="BALBOA">Balboa</option>
+                            <option value="CHARLESTON">Charleston</option>
+                        </select>
+                    </label>
+                    <label>Nivel:
+                        <select name="level">
+                            <option value="BASIC">Básico</option>
+                            <option value="INTERMEDIATE">Intermedio</option>
+                            <option value="ADVANCED">Avanzado</option>
+                        </select>
+                    </label>
                 </div>
 
                 <div id="activity-fields" style="display:none">
-                <label>Tipo actividad:
-                    <select name="activityType">
-                    <option value="TASTER">Taster</option>
-                    <option value="SOCIAL">Social</option>
-                    <option value="CONCERT">Concierto</option>
-                    <option value="MIX_MATCH">Mix & Match</option>
-                    </select>
-                </label>
-                <label>Banda:
-                    <input type="text" name="band">
-                </label>
-                <label>Descripción:
-                    <textarea name="description" rows="3"></textarea>
-                </label>
+                    <label>Tipo actividad:
+                        <select name="activityType">
+                            <option value="TASTER">Taster</option>
+                            <option value="SOCIAL">Social</option>
+                            <option value="CONCERT">Concierto</option>
+                            <option value="MIX_MATCH">Mix & Match</option>
+                        </select>
+                    </label>
+                    <label>Banda:
+                        <input type="text" name="band">
+                    </label>
+                    <label>Descripción:
+                        <textarea name="description" rows="2"></textarea>
+                    </label>
                 </div>
 
-                <button type="submit">Crear Evento</button>
-
-                <div id="form-error" style="display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 4px; font-weight: 500;"></div>
+                <button type="submit" id="submit-btn">Crear Evento</button>
+                <div id="form-error" style="display: none;"></div>
             </form>
 
             <div id="calendar"></div>
 
-            <div id="event-modal" class="modal" style="display: none;">
+            <div id="event-modal" class="modal">
                 <div class="modal-content">
-                    <span class="close-modal">&times;</span>
+                    <span class="close-modal">❌</span>
                     <div id="modal-body"></div>
                     <div class="modal-footer">
-                        <button id="delete-event-btn" class="btn-delete">Eliminar Evento</button>
+                        <button id="delete-event-btn" class="btn-delete">Eliminar</button>
                     </div>
                 </div>
             </div>
 
-            <div id="confirm-modal" class="modal" style="display: none;">
+            <div id="confirm-modal" class="modal">
                 <div class="modal-content confirmation-size">
-                    <span class="close-confirm close-modal">&times;</span>
-                    <div id="confirm-body">
-                        <h3>¿Estás seguro?</h3>
-                        <p>Esta acción no se puede deshacer.</p>
-                    </div>
+                    <h3>¿Seguro que quieres eliminar este evento?</h3>
                     <div class="confirm-footer">
-                        <button id="btn-confirm-delete" class="btn-delete">Eliminar</button>
-                        <button id="btn-confirm-cancel" class="btn-secondary">Cancelar</button>
+                        <button id="btn-confirm-delete" class="btn-delete">Sí, eliminar</button>
+                        <button id="btn-confirm-cancel">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -129,6 +126,10 @@ export class AppController {
             this.updateHours(e.target.value);
             this.formController.updateAvailableLocations();
         };
+
+        document.getElementById('event-time').onchange = () => {
+            this.formController.updateAvailableLocations();
+        };
     }
 
     toggleFields(type) {
@@ -139,9 +140,9 @@ export class AppController {
     updateLocations(type) {
         const locationSelect = document.getElementById('event-location');
         const locations = type === 'class' ? CLASSROOMS : ACTIVITY_LOCATIONS;
-        locationSelect.innerHTML = locations.map(loc =>
-            `<option value="${loc}">${loc}</option>`
-        ).join('');
+        locationSelect.innerHTML = locations.map(loc => `
+            <option value="${loc}">${loc}</option>
+        `).join('');
     }
 
     updateHours(day) {
@@ -151,8 +152,10 @@ export class AppController {
             SATURDAY: Array.from({ length: 24 }, (_, i) => i),
             SUNDAY: Array.from({ length: 21 }, (_, i) => i)
         };
-        timeSelect.innerHTML = hours[day].map(h =>
-            `<option value="${h.toString().padStart(2, '0')}:00">${h.toString().padStart(2, '0')}:00</option>`
-        ).join('');
+        timeSelect.innerHTML = hours[day].map(h => `
+            <option value="${h.toString().padStart(2, '0')}:00">
+                ${h.toString().padStart(2, '0')}:00
+            </option>
+        `).join('');
     }
 }

@@ -23,7 +23,7 @@
 }
 
 .day-header {
-    background: #343a40 !important;
+    background: #21486f !important;
     color: white !important;
     padding: 10px !important;
     text-align: center !important;
@@ -32,38 +32,82 @@
     text-transform: uppercase !important;
 }
 
+.hour-slot {
+    position: relative;
+    min-height: 100px;
+    border-bottom: 1px dashed #eee;
+    padding: 15px 5px 5px 5px;
+    transition: background 0.2s;
+}
+
+.slot-events-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.slot-time-label {
+    font-size: 0.7rem;
+    color: #000000;
+    position: absolute;
+    top: 2px;
+    left: 5px;
+}
+
+.slot-hover {
+    background-color: #e9ecef !important;
+    border: 2px dashed #007bff !important;
+}
+
 .event-card {
-    margin: 10px !important;
-    padding: 12px !important;
-    border-left: 5px solid !important;
+    position: relative;
+    margin: 2px !important;
+    padding: 8px 30px 8px 10px !important;
+    border-left: 4px solid !important;
     background: #fff !important;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1) !important;
-    transition: transform 0.2s !important;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1) !important;
+    cursor: grab !important;
+    font-size: 0.85rem;
+}
+
+.event-card.dragging {
+    opacity: 0.4;
+    cursor: grabbing !important;
 }
 
 .event-card.class {
-    border-left-color: #007bff !important;
+    border-left-color: #1abc9c !important;
 }
 
 .event-card.activity {
-    border-left-color: #28a745 !important;
+    border-left-color: #e74c3c !important;
 }
 
 .event-title {
     font-weight: bold !important;
     color: #212529 !important;
-    margin-bottom: 4px !important;
+    font-size: 0.9rem;
 }
 
 .event-time-location {
-    font-size: 0.85rem !important;
+    font-size: 0.75rem !important;
     color: #6c757d !important;
 }
 
-@media (max-width: 768px) {
-    .calendar-grid {
-        grid-template-columns: 1fr !important;
-    }
+.delete-quick-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #e74c3c;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+    line-height: 1;
+}
+
+.event-card:hover .delete-quick-btn {
+    display: block;
 }
 
 .modal {
@@ -81,7 +125,7 @@
 
 .modal-content {
     background: white;
-    padding: 20px;
+    padding: 30px 20px 20px;
     border-radius: 8px;
     width: 400px;
     position: relative;
@@ -94,94 +138,18 @@
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
-    margin-top: 15px;
 }
 
 .close-modal {
     position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #95a5a6;
+    top: 10px;
+    right: 15px;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: color 0.2s;
-    line-height: 1;
 }
 
-.close-modal:hover {
-    color: #2c3e50;
-}
-
-.modal-content {
-    padding-top: 40px !important;
-}
-
-.delete-quick-btn {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%);
-    color: #ff0000;
-    font-size: 2rem;
-    font-weight: bold;
-    cursor: pointer;
-    display: none;
-    padding: 5px;
-    line-height: 1;
-    border: none;
-    background: none;
-}
-
-.event-card {
-    position: relative;
-    padding-right: 35px !important;
-}
-
-.event-card:hover .delete-quick-btn {
-    display: block;
-}
-
-.confirmation-size {
-    max-width: 350px !important;
-    text-align: center;
-    padding: 25px !important;
-}
-
-.confirm-footer {
-    display: flex;
-    gap: 12px;
-    margin-top: 25px;
-}
-
-.btn-secondary {
-    background-color: #ecf0f1;
-    color: #7f8c8d;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    flex: 1;
-    font-weight: bold;
-}
-
-.btn-secondary:hover {
-    background-color: #bdc3c7;
-}
-
-#btn-confirm-delete {
-    flex: 1;
-    margin-top: 0;
-}
-
-.event-card {
-    cursor: grab !important;
-}
-
-.event-card:active {
-    cursor: grabbing !important;
-}
-
-.day-column {
-    transition: background-color 0.2s ease;
+@media (max-width: 768px) {
+    .calendar-grid {
+        grid-template-columns: 1fr !important;
+    }
 }

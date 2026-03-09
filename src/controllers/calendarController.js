@@ -8,199 +8,157 @@ export class CalendarController {
 
   render() {
     if (!this.container) return;
-
     const events = this.repo.getAll();
-    const eventsByDay = this.groupEventsByDay(events);
+    const hours = Array.from({ length: 24 }, (_, i) => i);
 
     this.container.innerHTML = `
-      <h2 style="color: #343a40; margin-bottom: 1.5rem;">Programa del Festival</h2>
-      <div class="calendar-grid">
-        ${Object.keys(FESTIVAL_DAYS).map(dayKey => `
-          <div class="day-column">
-            <div class="day-header">${FESTIVAL_DAYS[dayKey]}</div>
-            <div class="day-events">
-              ${this.renderDayEvents(eventsByDay[dayKey])}
+            <div class="calendar-grid">
+                ${Object.keys(FESTIVAL_DAYS).map(dayKey => `
+                    <div class="day-column">
+                        <div class="day-header">${FESTIVAL_DAYS[dayKey]}</div>
+                        <div class="time-slots">
+                            ${hours.map(h => {
+      const timeStr = `${String(h).padStart(2, '0')}:00`;
+      const eventsInSlot = events.filter(e => e.day === dayKey && e.startTime === timeStr);
+      return `
+                                    <div class="hour-slot" data-day="${dayKey}" data-time="${timeStr}">
+                                        <span class="slot-time-label">${timeStr}</span>
+                                        <div class="slot-events-container">
+                                            ${eventsInSlot.map(ev => `
+                                                <div class="event-card ${ev.type}" data-id="${ev.id}" draggable="true">
+                                                    <button class="delete-quick-btn" data-id="${ev.id}">❌</button>
+                                                    <div class="event-title">${ev.name}</div>
+                                                    <div class="event-time-location">${ev.location}</div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `;
+    }).join('')}
+                        </div>
+                    </div>
+                `).join('')}
             </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
+        `;
+    this.setupListeners();
+  }
 
-    this.container.querySelectorAll('.delete-quick-btn').forEach(btn => {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        if (confirm('¿Eliminar evento?')) {
-          this.repo.delete(btn.dataset.id);
-          this.render();
-        }
-      };
-    });
-
+  setupListeners() {
     this.container.querySelectorAll('.event-card').forEach(card => {
       card.onclick = () => this.showDetail(card.dataset.id);
+      card.ondragstart = (e) => {
+        e.dataTransfer.setData('text/plain', card.dataset.id);
+        card.classList.add('dragging');
+      };
+      card.ondragend = () => card.classList.remove('dragging');
     });
 
     this.container.querySelectorAll('.delete-quick-btn').forEach(btn => {
       btn.onclick = (e) => {
         e.stopPropagation();
-        this.showConfirmDelete(btn.dataset.id);
+        this.confirmDelete(btn.dataset.id);
       };
     });
 
-    this.container.querySelectorAll('.event-card').forEach(card => {
-      card.ondragstart = (e) => {
-        e.dataTransfer.setData('text/plain', card.dataset.id);
-        card.style.opacity = '0.5';
-      };
-      card.ondragend = () => card.style.opacity = '1';
-    });
-
-    this.container.querySelectorAll('.day-column').forEach(column => {
-      column.ondragover = (e) => {
+    this.container.querySelectorAll('.hour-slot').forEach(slot => {
+      slot.ondragover = (e) => { e.preventDefault(); slot.classList.add('slot-hover'); };
+      slot.ondragleave = () => slot.classList.remove('slot-hover');
+      slot.ondrop = (e) => {
         e.preventDefault();
-        column.style.background = '#f0f0f0';
-      };
-
-      column.ondragleave = () => {
-        column.style.background = '#ffffff';
-      };
-
-      column.ondrop = (e) => {
-        e.preventDefault();
-        column.style.background = '#ffffff';
-        const eventId = e.dataTransfer.getData('text/plain');
-        const newDay = column.querySelector('.day-header').innerText.toUpperCase();
-
-        this.handleDrop(eventId, newDay);
+        slot.classList.remove('slot-hover');
+        this.handleDrop(e.dataTransfer.getData('text/plain'), slot.dataset.day, slot.dataset.time);
       };
     });
   }
 
-  groupEventsByDay(events) {
-    const byDay = {};
-    Object.keys(FESTIVAL_DAYS).forEach(dayKey => {
-      byDay[dayKey] = [];
-    });
-    events.forEach(ev => {
-      const dayKey = ev.day.toUpperCase();
-      if (byDay[dayKey]) byDay[dayKey].push(ev);
-    });
-    return byDay;
-  }
+  handleDrop(id, day, time) {
+    const all = this.repo.getAll();
+    const ev = all.find(e => e.id === id);
+    if (!ev) return;
 
-  renderDayEvents(events) {
-    if (!events || events.length === 0) {
-      return `<div class="no-events">Sin eventos</div>`;
-    }
-
-    return events.map(ev => `
-      <div class="event-card ${ev.type}"
-          data-id="${ev.id}"
-          draggable="true"
-          style="position: relative;">
-          <span class="delete-quick-btn" data-id="${ev.id}">&times;</span>
-          <div class="event-title">${ev.name}</div>
-          <div class="event-time-location">${ev.startTime} → ${ev.location}</div>
-      </div>
-    `).join('');
-  }
-
-  showDetail(id) {
-    const event = this.repo.getAll().find(e => e.id === id);
-    if (!event) return;
-
-    const modal = document.getElementById('event-modal');
-    const body = document.getElementById('modal-body');
-    const deleteBtn = document.getElementById('delete-event-btn');
-
-    body.innerHTML = `
-        <h3>${event.name}</h3>
-        <p><strong>Ubicación:</strong> ${event.location}</p>
-        <p><strong>Horario:</strong> ${event.startTime} - ${event.endTime}</p>
-        <hr>
-        ${event.type === 'class' ? `
-            <p><strong>Profesores:</strong> ${event.teachers}</p>
-            <p><strong>Estilo:</strong> ${event.style} | <strong>Nivel:</strong> ${event.level}</p>
-        ` : `
-            <p><strong>Tipo:</strong> ${event.activityType}</p>
-            <p><strong>Banda:</strong> ${event.band || 'N/A'}</p>
-            <p><strong>Descripción:</strong> ${event.description}</p>
-        `}
-    `;
-
-    modal.style.display = 'flex';
-
-    deleteBtn.onclick = () => {
-      this.showConfirmDelete(id);
-    };
-
-    modal.querySelector('.close-modal').onclick = () => modal.style.display = 'none';
-  }
-
-  showConfirmDelete(id) {
-    const modal = document.getElementById('confirm-modal');
-    const btnConfirm = document.getElementById('btn-confirm-delete');
-    const btnCancel = document.getElementById('btn-confirm-cancel');
-    const btnClose = modal.querySelector('.close-confirm');
-
-    modal.style.display = 'flex';
-
-    const close = () => { modal.style.display = 'none'; };
-
-    btnConfirm.onclick = () => {
-      this.repo.delete(id);
-      this.render();
-      close();
-      document.getElementById('event-modal').style.display = 'none';
-    };
-
-    btnCancel.onclick = close;
-    btnClose.onclick = close;
-
-    modal.onclick = (e) => { if (e.target === modal) close(); };
-  }
-
-  handleDrop(eventId, newDay) {
-    const event = this.repo.getAll().find(e => e.id === eventId);
-    if (!event) return;
-
-    const dayMap = { 'VIERNES': 'FRIDAY', 'SÁBADO': 'SATURDAY', 'SABADO': 'SATURDAY', 'DOMINGO': 'SUNDAY' };
-    const dayKey = dayMap[newDay] || newDay;
-
-    const hour = parseInt(event.startTime.split(':')[0]);
-    const validHours = {
+    const hour = parseInt(time.split(':')[0]);
+    const VALID_HOURS = {
       FRIDAY: [20, 21, 22, 23],
       SATURDAY: Array.from({ length: 24 }, (_, i) => i),
       SUNDAY: Array.from({ length: 21 }, (_, i) => i)
     };
 
-    if (!validHours[dayKey].includes(hour)) {
-      alert(`No puedes mover este evento al ${newDay}. El horario (${event.startTime}) no está permitido.`);
+    if (!VALID_HOURS[day].includes(hour)) {
+      alert(`Esa hora no está permitida para el día seleccionado.`);
       return;
     }
 
-    const isOccupied = this.repo.getAll().some(otherEvent =>
-      otherEvent.id !== eventId &&
-      otherEvent.day === dayKey &&
-      otherEvent.location === event.location &&
-      this.checkOverlap(otherEvent.startTime, otherEvent.endTime, event.startTime, event.endTime)
+    const end = this.calculateEndTime(time, 60);
+    const occupied = all.some(other =>
+      other.id !== id && other.day === day && other.location === ev.location &&
+      this.checkOverlap(other.startTime, other.endTime, time, end)
     );
 
-    if (isOccupied) {
-      alert(`Error: No puedes moverlo aquí. La ubicación "${event.location}" ya está ocupada el ${newDay} a las ${event.startTime}.`);
+    if (occupied) {
+      alert(`La sala "${ev.location}" ya está ocupada en ese horario.`);
       return;
     }
 
-    event.day = dayKey;
+    ev.day = day;
+    ev.startTime = time;
+    ev.endTime = end;
     this.repo.save();
     this.render();
   }
 
-  checkOverlap(start1, end1, start2, end2) {
-    const toMin = (t) => {
-      const [h, m] = t.split(':').map(Number);
-      return h * 60 + m;
+  checkOverlap(s1, e1, s2, e2) {
+    const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    return toMin(s1) < toMin(e2) && toMin(s2) < toMin(e1);
+  }
+
+  calculateEndTime(start, dur) {
+    const [h, m] = start.split(':').map(Number);
+    const t = h * 60 + m + dur;
+    return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+  }
+
+  showDetail(id) {
+    const ev = this.repo.getAll().find(e => e.id === id);
+    if (!ev) return;
+
+    const modal = document.getElementById('event-modal');
+    const body = document.getElementById('modal-body');
+
+    let detailHtml = `
+            <h3>${ev.name}</h3>
+            <p><strong>Ubicación:</strong> ${ev.location}</p>
+            <p><strong>Horario:</strong> ${ev.startTime} - ${ev.endTime}</p>
+            <hr>
+        `;
+
+    if (ev.type === 'class') {
+      detailHtml += `
+                <p><strong>Profesores:</strong> ${ev.teachers || 'No asignados'}</p>
+                <p><strong>Estilo:</strong> ${ev.style} | <strong>Nivel:</strong> ${ev.level}</p>
+            `;
+    } else {
+      detailHtml += `
+                <p><strong>Tipo:</strong> ${ev.activityType}</p>
+                <p><strong>Banda:</strong> ${ev.band || 'Sin banda'}</p>
+                <p><strong>Descripción:</strong> ${ev.description || 'Sin descripción'}</p>
+            `;
+    }
+
+    body.innerHTML = detailHtml;
+    modal.style.display = 'flex';
+    modal.querySelector('.close-modal').onclick = () => modal.style.display = 'none';
+    document.getElementById('delete-event-btn').onclick = () => this.confirmDelete(id);
+  }
+
+  confirmDelete(id) {
+    const modal = document.getElementById('confirm-modal');
+    modal.style.display = 'flex';
+    document.getElementById('btn-confirm-delete').onclick = () => {
+      this.repo.delete(id);
+      this.render();
+      modal.style.display = 'none';
+      document.getElementById('event-modal').style.display = 'none';
     };
-    return toMin(start1) < toMin(end2) && toMin(start2) < toMin(end1);
+    document.getElementById('btn-confirm-cancel').onclick = () => modal.style.display = 'none';
   }
 }
